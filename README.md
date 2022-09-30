@@ -41,8 +41,9 @@ The following differences exist:
 1. Follow the instructions in the [companion blog post](https://blog.okturtles.org/2022/10/convert-wordpress-to-static-site/) to export your Wordpress posts and content.
 2. Clone or copy this project.
 3. Place your markdown-ified Wordpress posts in `src/posts`.
-4. Run `npm install` (once), then either `npm run build` or `npm run dev` per the original instructions below.
-5. Make any modifications as needed to the files under `src` so that your blog looks and behaves the way you'd like it.
+4. Place your mirrored `wp-content` folder in `public/`. The most important subfolder of this is `wp-content/uploads`, which contains your pictures. You might or might not need the rest.
+5. Run `npm install` (once), then either `npm run build` or `npm run dev` per the original instructions below.
+6. Make any modifications as needed to the files under `src` so that your blog looks and behaves the way you'd like it.
 
 Finally, there are some thinks to keep in mind:
 
