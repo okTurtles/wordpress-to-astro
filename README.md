@@ -52,6 +52,7 @@ Finally, there are some thinks to keep in mind:
 - **Make sure** that the URL in `permalink` begins and ends with a `/`
 - You should generate the `date` value in `date` like so: `node -e "console.log(new Date().toISOString())"`
 - Many of the newly added files do not fit in with the markup and styling of the original template, and probably won't fit in with the styling and markup of your Wordpress site either. You will need to modify them to look good.
+- When making changes to the template, if things suddenly don't work, try running `npm run build` instead of `npm run dev`, as that seems more likely to identify and catch bugs.
 
 # Astro Starter Kit: Blog
 
