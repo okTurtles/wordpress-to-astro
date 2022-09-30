@@ -8,6 +8,25 @@ Please see this blog for details:
 
 👉 **[How to Convert a Wordpress blog to Astro Static Site Generator](https://blog.okturtles.org/2022/10/convert-wordpress-to-static-site/)**
 
+## How to use this project
+
+1. Follow the instructions in the [companion blog post](https://blog.okturtles.org/2022/10/convert-wordpress-to-static-site/) to export your Wordpress posts and content.
+2. Clone or copy this project.
+3. Place your markdown-ified Wordpress posts in `src/posts`.
+4. Place your mirrored `wp-content` folder in `public/`. The most important subfolder of this is `wp-content/uploads`, which contains your pictures. You might or might not need the rest.
+5. Run `npm install` (once), then either `npm run build` or `npm run dev` per the original instructions below.
+6. Make any modifications as needed to the files under `src` so that your blog looks and behaves the way you'd like it.
+
+Finally, there are some thinks to keep in mind:
+
+- The following frontmatter is required: `title`, `date`, `author`, `layout`, `permalink`, `categories`, `tags`
+- The following frontmatter is optional: `draft`, `id`
+- You can set `draft: true` to prevent a post from appearing on the generated website
+- **Make sure** that the URL in `permalink` begins and ends with a `/`
+- You should generate the `date` value in `date` like so: `node -e "console.log(new Date().toISOString())"`
+- Many of the newly added files do not fit in with the markup and styling of the original template, and probably won't fit in with the styling and markup of your Wordpress site either. You will need to modify them to look good.
+- When making changes to the template, if things suddenly don't work, try running `npm run build` instead of `npm run dev`, as that seems more likely to identify and catch bugs.
+
 ## How this project differs from the official template:
 
 This project is fork of version `1.1.0` of the [`create-astro`](https://github.com/withastro/astro/tree/main/packages/create-astro) project.
@@ -35,25 +54,6 @@ The following differences exist:
 - Added support for `@` in imports to make it easy to import files without using `../../../` etc.
 - Added `PAGE_SIZE` config variable to `src/config.ts`
 - `.npmrc` now uses `save-exact = true`
-
-## How to use this project
-
-1. Follow the instructions in the [companion blog post](https://blog.okturtles.org/2022/10/convert-wordpress-to-static-site/) to export your Wordpress posts and content.
-2. Clone or copy this project.
-3. Place your markdown-ified Wordpress posts in `src/posts`.
-4. Place your mirrored `wp-content` folder in `public/`. The most important subfolder of this is `wp-content/uploads`, which contains your pictures. You might or might not need the rest.
-5. Run `npm install` (once), then either `npm run build` or `npm run dev` per the original instructions below.
-6. Make any modifications as needed to the files under `src` so that your blog looks and behaves the way you'd like it.
-
-Finally, there are some thinks to keep in mind:
-
-- The following frontmatter is required: `title`, `date`, `author`, `layout`, `permalink`, `categories`, `tags`
-- The following frontmatter is optional: `draft`, `id`
-- You can set `draft: true` to prevent a post from appearing on the generated website
-- **Make sure** that the URL in `permalink` begins and ends with a `/`
-- You should generate the `date` value in `date` like so: `node -e "console.log(new Date().toISOString())"`
-- Many of the newly added files do not fit in with the markup and styling of the original template, and probably won't fit in with the styling and markup of your Wordpress site either. You will need to modify them to look good.
-- When making changes to the template, if things suddenly don't work, try running `npm run build` instead of `npm run dev`, as that seems more likely to identify and catch bugs.
 
 # Astro Starter Kit: Blog
 
