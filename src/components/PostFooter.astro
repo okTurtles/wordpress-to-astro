@@ -1,0 +1,31 @@
+---
+import { urlifyToken } from '@/js/util.js'
+
+const { title, author, date, permalink, tags, categories, style = '' } = Astro.props
+const formattedDate = new Date(date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+const formattedTime = new Date(date).toLocaleTimeString(undefined, { timeStyle: 'short', hour12: true })
+const authorURL = `/author/${urlifyToken(author || 'unknown')}`
+---
+
+<footer class="entry-meta" style={style}>
+  <span class="date-link">
+    <a href={permalink} title={formattedTime} rel="bookmark">
+      <time class="entry-date" datetime={date}>{formattedDate}</time></a>
+  </span>
+  <span class="category-links">
+    {categories?.map((category, idx) =>
+      <>
+        <a href={`/category/${urlifyToken(category)}/`} rel="category tag">{category}</a>
+        {(idx < categories.length - 1) ? ', ' : null}
+      </>
+    )}
+  </span>
+  <span class="tags-links">
+    {tags?.map((tag, idx) =>
+      <>
+        <a href={`/tag/${urlifyToken(tag)}/`} rel="tag">{tag}</a>
+        {(idx < tags.length - 1) ? ', ' : null}
+      </>
+    )}
+  <span class="author-link vcard"><a href={authorURL} title={`View all posts by ${author}`} rel="author">{author}</a></span>
+</footer>

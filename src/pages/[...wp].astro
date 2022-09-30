@@ -1,0 +1,21 @@
+---
+import { sortedPosts } from '@/js/util.js'
+
+export async function getStaticPaths() {
+  const posts = sortedPosts(await Astro.glob('../posts/*.{md,mdx}'))
+  return posts.map(post => {
+    return {
+      params: {
+        // these `.slice` calls are necessary and remove
+        // the `/` from the beginning and end of the permalink
+        wp: post.frontmatter.permalink.slice(1).slice(0, -1)
+      },
+      props: post
+    }
+  })
+}
+
+const { Content } = Astro.props
+---
+
+<Content />

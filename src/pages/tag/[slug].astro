@@ -1,0 +1,53 @@
+---
+import BaseHead from '@/components/BaseHead.astro'
+import Header from '@/components/Header.astro'
+import Footer from '@/components/Footer.astro'
+import WPArticleSummary from '@/components/WPArticleSummary.astro'
+import { urlifyToken, sortedPosts } from '@/js/util.js'
+import { Debug } from 'astro/components'
+import { SITE_TITLE, SITE_DESCRIPTION } from '@/config.ts'
+
+export async function getStaticPaths() {
+  const posts = sortedPosts(await Astro.glob('../../posts/*.{md,mdx}'))
+  const tags = new Set()
+  posts.forEach(post => {
+    post.frontmatter.tags?.map(urlifyToken).forEach(c => tags.add(c))
+  })
+  return Array.from(tags).map(tag => {
+    const tagPosts = posts.filter(post => post.frontmatter.tags?.map(urlifyToken).includes(tag))
+    return {
+      params: { slug: tag },
+      props: {
+        posts: tagPosts,
+        tag: tagPosts[0].frontmatter.tags?.find(x => urlifyToken(x) === tag)
+      }
+    }
+  })
+}
+---
+
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <BaseHead title={`${Astro.props.tag} » ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+  </head>
+  <body class="archive category">
+    <div id="page" class="hfeed site">
+      <Header />
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content">
+          <div id="content" role="main">
+            <header class="page-header">
+              <h1 class="page-title">Posts Tagged: <span>{Astro.props.tag}</span></h1>
+            </header>
+            {Astro.props.posts.map(page =>
+              <WPArticleSummary page={page} />
+            )}
+          </div>
+        </div>
+        <div class="clear-fix"></div>
+      </div>
+    </div>
+    <Footer />
+  </body>
+</html>

@@ -1,0 +1,51 @@
+---
+// import Search from '@components/Search.astro'
+import { urlifyToken, sortedPosts } from '@/js/util.js'
+
+const posts = sortedPosts(await Astro.glob('../posts/*.{md,mdx}'))
+const categories = {}
+posts.forEach(post => {
+  post.frontmatter.categories?.forEach(c => {
+    if (!categories[c]) categories[c] = 1
+    else categories[c] += 1
+  })
+})
+
+---
+
+<div id="secondary" class="widget-area" role="complementary">
+  <!-- <aside id="search-2" class="widget widget_search">
+    <Search />
+  </aside> -->
+  <aside id="nav_menu-2" class="widget widget_nav_menu">
+    <h3 class="widget-title">Social</h3>
+    <div class="menu-menu-container">
+      <ul id="menu-menu" class="menu">
+        <li class="menu-item"><a href="your-social-link">social link #1</a></li>
+        <li class="menu-item"><a href="your-social-link">social link #2</a></li>
+      </ul>
+    </div>
+  </aside>
+  <aside id="recent-posts-2" class="widget widget_recent_entries">
+    <h3 class="widget-title">Recent Posts</h3>
+    <ul>
+      {posts.slice(0, 5).map(post =>
+        <li>
+          <a href={post.frontmatter.permalink}>{post.frontmatter.title}</a>
+        </li>
+      )}
+    </ul>
+  </aside>
+  <aside id="categories-2" class="widget widget_categories">
+    <h3 class="widget-title">Categories</h3>
+    <ul>
+      {Object.keys(categories).sort((a, b) => {
+        return a.localeCompare(b)
+      }).map(cat =>
+        <li class="cat-item">
+          <a href={`/category/${urlifyToken(cat)}/`}>{cat}</a> ({categories[cat]})
+        </li>
+      )}
+    </ul>
+  </aside>
+</div>

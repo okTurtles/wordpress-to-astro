@@ -1,0 +1,53 @@
+---
+import BaseHead from '@/components/BaseHead.astro'
+import Header from '@/components/Header.astro'
+import Footer from '@/components/Footer.astro'
+import WPArticleSummary from '@/components/WPArticleSummary.astro'
+import { urlifyToken, sortedPosts } from '@/js/util.js'
+import { Debug } from 'astro/components'
+import { SITE_TITLE, SITE_DESCRIPTION } from '@/config.ts'
+
+export async function getStaticPaths() {
+  const posts = sortedPosts(await Astro.glob('../../posts/*.{md,mdx}'))
+  const authors = new Set()
+  posts.forEach(post => {
+    authors.add(urlifyToken(post.frontmatter.author))
+  })
+  return Array.from(authors).map(author => {
+    const authorPosts = posts.filter(post => urlifyToken(post.frontmatter.author) === author)
+    return {
+      params: { slug: author },
+      props: {
+        posts: authorPosts,
+        author: authorPosts[0].frontmatter.author
+      }
+    }
+  })
+}
+---
+
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <BaseHead title={`${Astro.props.author} » ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+  </head>
+  <body class="archive author">
+    <div id="page" class="hfeed site">
+      <Header />
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content">
+          <div id="content" role="main">
+            <header class="page-header">
+              <h1 class="page-title">Author Archives: <span class="vcard">{Astro.props.author}</span></h1>
+            </header>
+            {Astro.props.posts.map(page =>
+              <WPArticleSummary page={page} />
+            )}
+          </div>
+        </div>
+        <div class="clear-fix"></div>
+      </div>
+    </div>
+    <Footer />
+  </body>
+</html>

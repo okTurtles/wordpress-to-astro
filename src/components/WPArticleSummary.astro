@@ -1,0 +1,47 @@
+---
+import PostFooter from "@/components/PostFooter.astro"
+import { stripHTML, urlifyToken } from '@/js/util.js'
+
+const { page, maxWords = 46, showFooter = false, articlePreview = false } = Astro.props
+const { title, author, date, permalink, tags, categories } = page.frontmatter
+const pageSummary = stripHTML(page.compiledContent())
+  .slice(0, 1000)
+  .split(' ')
+  .slice(0, maxWords)
+  .join(' ')
+const formattedDate = new Date(date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+const formattedTime = new Date(date).toLocaleTimeString(undefined, { timeStyle: 'short', hour12: true })
+const authorURL = `/author/${urlifyToken(author || 'unknown')}`
+const hasMoreTag = page.compiledContent().includes('<!--more-->')
+const showPreview = articlePreview && hasMoreTag
+
+---
+
+<article class="post type-post status-publish format-standard hentry">
+  <header class="entry-header">
+    <h1 class="entry-title">
+      <a href={permalink} title={`Permalink to ${title}`} rel="bookmark">{title}</a>
+    </h1>
+  </header>
+  {showPreview &&
+    <div class="author-meta">
+      Posted by <span><a href={authorURL} title={`View all posts by ${author}`} rel="author">{author}</a></span> on <span><a href={permalink} title={formattedTime} rel="bookmark"><time class="entry-date" datetime={date}>{formattedDate}</time></a></span>
+    </div>
+  }
+  {(!showPreview && maxWords > 0) &&
+    <div class="entry-summary">
+      <p>{pageSummary} [&hellip;]</p>
+    </div>
+  }
+</article>
+{showPreview
+  ? <>
+    <div class="entry-content">
+      <Fragment set:html={page.compiledContent().split('<!--more-->')[0]} />
+      <a href={permalink} class="more-link">Continue reading <span class="meta-nav">&rarr;</span></a>
+    </div>
+    <PostFooter {...page.frontmatter} />
+  </>
+  : showFooter &&
+    <PostFooter {...page.frontmatter} style="margin-top: -35px; margin-bottom: 50px" />
+}

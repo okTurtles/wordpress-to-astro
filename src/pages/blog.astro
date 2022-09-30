@@ -1,0 +1,66 @@
+---
+import BaseHead from '../components/BaseHead.astro'
+import Header from '../components/Header.astro'
+import Footer from '../components/Footer.astro'
+import { SITE_TITLE, SITE_DESCRIPTION, PAGE_SIZE } from '../config'
+
+// Use Astro.glob() to fetch all posts, and then sort them by date.
+const posts = (await Astro.glob('../posts/*.{md,mdx}')).sort(
+	(a, b) => new Date(b.frontmatter.date).valueOf() - new Date(a.frontmatter.date).valueOf()
+)
+const hasMorePosts = posts.length > PAGE_SIZE
+---
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<style>
+			ul {
+				list-style-type: none;
+				padding: unset;
+			}
+			ul li {
+				display: flex;
+			}
+			ul li time {
+				flex: 0 0 130px;
+				font-style: italic;
+				color: #595959;
+			}
+			ul li a:visited {
+				color: #8e32dc;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section>
+				<ul>
+					{posts.slice(0, PAGE_SIZE).map((post) => (
+						<li>
+							<time datetime={post.frontmatter.date}>
+								{new Date(post.frontmatter.date).toLocaleDateString('en-us', {
+									year: 'numeric',
+									month: 'short',
+									day: 'numeric',
+								})}
+							</time>
+							<a href={post.frontmatter.permalink}>{post.frontmatter.title}</a>
+						</li>
+					))}
+				</ul>
+			</section>
+			<!-- The HTML markup below probably needs to be modified to look good. -->
+			{hasMorePosts && 
+			  <nav id="nav-below" class="navigation nav-below" role="navigation">
+			    <h3 class="assistive-text">Post navigation</h3>
+			    <div class="nav-next alignleft"></div>
+			    <div class="nav-previous alignright"><a href="/page/2/">Older <span class="meta-nav">&rarr;</span></a></div>
+			    <div class="clear-fix"></div>
+			  </nav>}
+		</main>
+		<Footer />
+	</body>
+</html>
