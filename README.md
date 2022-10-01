@@ -15,7 +15,7 @@ Please see this blog for details:
 3. Place your markdown-ified Wordpress posts in `src/posts`.
 4. Place your mirrored `wp-content` folder in `public/`. The most important subfolder of this is `wp-content/uploads`, which contains your pictures. You might or might not need the rest.
 5. Install project dependencies by running `npm install` (assuming you have Node.js installed)
-6. Disable Astro telemetry: `./node_modules/.bin/astro telemtry disable` (this only needs to be done once)
+6. Disable Astro telemetry: `./node_modules/.bin/astro telemetry disable` (this only needs to be done once)
 7. Run `npm run build` to generate site in `dist/` and check for errors
 8. Run `npm run dev` to serve the site locally and monitor files for changes. You can make any modifications as needed to the files under `src/` so that your blog looks and behaves the way you'd like it
 
