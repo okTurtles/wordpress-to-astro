@@ -11,14 +11,14 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/mdx": "0.11.3",
-    "@astrojs/rss": "1.0.2",
-    "@astrojs/sitemap": "1.0.0",
-    "@remark-embedder/core": "3.0.1",
+    "@astrojs/mdx": "2.2.2",
+    "@astrojs/rss": "4.0.5",
+    "@astrojs/sitemap": "3.1.2",
+    "@remark-embedder/core": "3.0.2",
     "@remark-embedder/transformer-oembed": "3.0.0",
-    "astro": "1.4.1",
-    "entities": "4.4.0",
-    "remark-breaks": "3.0.2",
-    "remark-gfm": "3.0.1"
+    "astro": "4.5.12",
+    "entities": "4.5.0",
+    "remark-breaks": "4.0.0",
+    "remark-gfm": "4.0.0"
   }
 }

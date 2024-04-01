@@ -24,7 +24,7 @@ const remarkEmbedPlugin = [remarkEmbedder.default, {
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://example.com',
+	site: 'https://example.com', // CHANGE THIS TO YOUR HOMEPAGE!
 	integrations: [mdx(), sitemap()],
 	markdown: {
 		remarkPlugins: [remarkEmbedPlugin, remarkGfm, remarkBreaks]

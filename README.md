@@ -6,11 +6,11 @@ Your markdown-exported Wordpress blog posts should be placed in: `pages/posts/`
 
 Please see this blog for details:
 
-👉 **[How to Convert a Wordpress blog to Astro Static Site Generator](https://blog.okturtles.org/2022/10/convert-wordpress-to-static-site/)**
+👉 **[How to Convert a Wordpress blog to Astro Static Site Generator](https://blog.okturtles.org/2024/04/convert-wordpress-to-static-site/)**
 
 ## How to use this project
 
-1. Follow the instructions in the [companion blog post](https://blog.okturtles.org/2022/10/convert-wordpress-to-static-site/) to export your Wordpress posts and content.
+1. Follow the instructions in the [companion blog post](https://blog.okturtles.org/2024/04/convert-wordpress-to-static-site/) to export your Wordpress posts and content.
 2. Clone or copy this project.
 3. Place your markdown-ified Wordpress posts in `src/posts`.
 4. Place your mirrored `wp-content` folder in `public/`. The most important subfolder of this is `wp-content/uploads`, which contains your pictures. You might or might not need the rest.
@@ -18,10 +18,11 @@ Please see this blog for details:
 6. Disable Astro telemetry: `./node_modules/.bin/astro telemetry disable` (this only needs to be done once)
 7. Run `npm run build` to generate site in `dist/` and check for errors
 8. Run `npm run dev` to serve the site locally and monitor files for changes. You can make any modifications as needed to the files under `src/` so that your blog looks and behaves the way you'd like it
+9. Don't forget to update files `astro.config.mjs` and `config.ts` with values that are relevant to your website!
 
 When you run `npm run build`, your website will be saved to the `dist/` folder. How you'd like to deploy it then is up to you. There are [many options](https://docs.astro.build/en/guides/deploy/).
 
-Finally, there are some thinks to keep in mind:
+Finally, there are some things to keep in mind:
 
 - The following frontmatter is required: `title`, `date`, `author`, `layout`, `permalink`, `categories`, `tags`
 - The following frontmatter is optional: `draft`, `id`
