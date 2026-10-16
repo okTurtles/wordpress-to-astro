@@ -1,10 +1,11 @@
 ---
 import PostFooter from "@/components/PostFooter.astro"
-import { stripHTML, urlifyToken } from '@/js/util.js'
+import { stripHTML, urlifyToken, postHTML } from '@/js/util.js'
 
 const { page, maxWords = 46, showFooter = false, articlePreview = false } = Astro.props
-const { title, author, date, permalink, tags, categories } = page.frontmatter
-const pageSummary = stripHTML(page.compiledContent())
+const { title, author, date, permalink, tags, categories } = page.data
+const html = await postHTML(page)
+const pageSummary = stripHTML(html)
   .slice(0, 1000)
   .split(' ')
   .slice(0, maxWords)
@@ -12,7 +13,7 @@ const pageSummary = stripHTML(page.compiledContent())
 const formattedDate = new Date(date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 const formattedTime = new Date(date).toLocaleTimeString(undefined, { timeStyle: 'short', hour12: true })
 const authorURL = `/author/${urlifyToken(author || 'unknown')}`
-const hasMoreTag = page.compiledContent().includes('<!--more-->')
+const hasMoreTag = html.includes('<!--more-->')
 const showPreview = articlePreview && hasMoreTag
 
 ---
@@ -37,11 +38,11 @@ const showPreview = articlePreview && hasMoreTag
 {showPreview
   ? <>
     <div class="entry-content">
-      <Fragment set:html={page.compiledContent().split('<!--more-->')[0]} />
+      <Fragment set:html={html.split('<!--more-->')[0]} />
       <a href={permalink} class="more-link">Continue reading <span class="meta-nav">&rarr;</span></a>
     </div>
-    <PostFooter {...page.frontmatter} />
+    <PostFooter {...page.data} />
   </>
   : showFooter &&
-    <PostFooter {...page.frontmatter} style="margin-top: -35px; margin-bottom: 50px" />
+    <PostFooter {...page.data} style="margin-top: -35px; margin-bottom: 50px" />
 }

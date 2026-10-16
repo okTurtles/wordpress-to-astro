@@ -27,5 +27,6 @@ const authorURL = `/author/${urlifyToken(author || 'unknown')}`
         {(idx < tags.length - 1) ? ', ' : null}
       </>
     )}
+  </span>
   <span class="author-link vcard"><a href={authorURL} title={`View all posts by ${author}`} rel="author">{author}</a></span>
 </footer>

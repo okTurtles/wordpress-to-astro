@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config'
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
+import { unified } from '@astrojs/markdown-remark'
 import remarkBreaks from 'remark-breaks' // improves support for newlines in markdown files
 import remarkGfm from 'remark-gfm' // support rendering tables in markdown files
 // twitter & youtube auto-embed via remark
@@ -26,7 +27,11 @@ const remarkEmbedPlugin = [remarkEmbedder.default, {
 export default defineConfig({
 	site: 'https://example.com', // CHANGE THIS TO YOUR HOMEPAGE!
 	integrations: [mdx(), sitemap()],
+	// keep the whitespace between elements (Astro 7's default 'jsx' mode removes
+	// it, so for example the links in PostFooter would run together)
+	compressHTML: true,
 	markdown: {
-		remarkPlugins: [remarkEmbedPlugin, remarkGfm, remarkBreaks]
+		// Astro's default Markdown processor ignores remark plugins, so use the remark-based one
+		processor: unified({ remarkPlugins: [remarkEmbedPlugin, remarkGfm, remarkBreaks] })
 	}
 })

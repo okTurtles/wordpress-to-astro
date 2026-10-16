@@ -1,6 +1,9 @@
 # build output
 dist/
 
+# generated types and content data
+.astro/
+
 # dependencies
 node_modules/
 
@@ -17,3 +20,6 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
+
+# .agents
+/.agents/

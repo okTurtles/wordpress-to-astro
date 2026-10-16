@@ -1,21 +1,35 @@
 ---
-import { sortedPosts } from '@/js/util.js'
+import path from 'node:path'
+import { render } from 'astro:content'
+import { getPosts } from '@/js/util.js'
 
 export async function getStaticPaths() {
-  const posts = sortedPosts(await Astro.glob('../posts/*.{md,mdx}'))
+  const posts = await getPosts()
   return posts.map(post => {
     return {
       params: {
         // these `.slice` calls are necessary and remove
         // the `/` from the beginning and end of the permalink
-        wp: post.frontmatter.permalink.slice(1).slice(0, -1)
+        wp: post.data.permalink.slice(1).slice(0, -1)
       },
-      props: post
+      props: { post }
     }
   })
 }
 
-const { Content } = Astro.props
+// Content collections ignore the `layout` field of `.md` posts, so apply it here.
+// Like before, `layout` is a path relative to the post file (`post.filePath` is
+// relative to the project root, for example `src/posts/sub/post.md`).
+const layouts = import.meta.glob('/src/layouts/**/*.astro', { eager: true })
+const { post } = Astro.props
+const layoutPath = post.data.layout
+  ? path.posix.join('/', path.posix.dirname(post.filePath), post.data.layout)
+  : '/src/layouts/BlogPost.astro'
+const Layout = layouts[layoutPath]?.default
+if (!Layout) {
+  throw new Error(`${post.filePath}: layout '${post.data.layout}' not found (resolved to '${layoutPath}')`)
+}
+const { Content } = await render(post)
 ---
 
-<Content />
+<Layout frontmatter={post.data}><Content /></Layout>
