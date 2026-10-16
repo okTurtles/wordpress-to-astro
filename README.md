@@ -42,7 +42,7 @@ Finally, there are some things to keep in mind:
 
 ## How this project differs from the official template:
 
-This project is fork of version `1.1.0` of the [`create-astro`](https://github.com/withastro/astro/tree/main/packages/create-astro) project. It has since been upgraded to Astro 7.
+This project is a fork of version `1.1.0` of the [`create-astro`](https://github.com/withastro/astro/tree/main/packages/create-astro) project. It has since been upgraded to Astro 7.
 
 The following differences exist:
 
@@ -58,7 +58,7 @@ The following differences exist:
     - `src/pages/page/[page].astro`: wordpress-URL pagination support for listing all of your posts (`/page/1/`, `/page/2/`, and so on). The homepage (`src/pages/index.astro`) still shows the welcome text of the template.
     - The orignal template's `src/pages/blog/` folder has been removed. Posts now go in `src/posts/`
   - Components:
-    - `src/components/WPArticleSummary.astro`: shows a post in the lists of posts in one of two ways: the text before the `<!--more-->` marker, or the first words of the post if it has no marker
+    - `src/components/WPArticleSummary.astro`: shows a post in a list of posts. On `/page/N/`, it shows the text before the `<!--more-->` marker if the post has one. Otherwise, and on the author, category, and tag pages, it shows the first words of the post.
     - `src/components/PostFooter.astro`: optional footer under posts to link to related categories, tags, etc.
     - `src/components/Sidebar.astro`: sidebar widgets to list categories and recent posts (not used by default)
     - `src/components/Search.astro`: non-functioning search widget. Feel free to [implement it](https://gomakethings.com/how-to-create-a-search-page-for-a-static-website-with-vanilla-js/) and send a PR!
