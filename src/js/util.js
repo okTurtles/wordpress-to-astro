@@ -2,7 +2,10 @@
 
 // alternative: https://github.com/mdevils/html-entities
 import { decodeHTML } from 'entities'
-import { getCollection } from 'astro:content'
+import { getCollection, render } from 'astro:content'
+import { experimental_AstroContainer } from 'astro/container'
+import { loadRenderers } from 'astro:container'
+import { getContainerRenderer } from '@astrojs/mdx/container-renderer'
 
 // if you need a fancier one, you could use https://github.com/sindresorhus/slugify
 export function urlifyToken (s) {
@@ -28,6 +31,25 @@ export async function getPosts () {
   return sortedPosts(await getCollection('posts'))
 }
 
+// `.md` entries come with their HTML in `post.rendered`. `.mdx` entries do not:
+// they are components, so they are rendered to a string with Astro's
+// experimental Container API. Each post is rendered once and cached. The cache
+// checks `post.digest` so that `astro dev` renders an edited post again.
+const mdxHTMLCache = new Map()
 export async function postHTML (post) {
-  return post.rendered.html
+  if (post.rendered) return post.rendered.html
+  let cached = mdxHTMLCache.get(post.id)
+  if (cached?.digest !== post.digest) {
+    cached = { digest: post.digest, html: renderToHTML(post) }
+    mdxHTMLCache.set(post.id, cached)
+  }
+  return cached.html
+}
+
+let container
+async function renderToHTML (post) {
+  container ??= loadRenderers([getContainerRenderer()])
+    .then(renderers => experimental_AstroContainer.create({ renderers }))
+  const { Content } = await render(post)
+  return (await container).renderToString(Content)
 }

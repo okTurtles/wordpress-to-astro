@@ -22,6 +22,11 @@ export async function getStaticPaths() {
 // relative to the project root, for example `src/posts/sub/post.md`).
 const layouts = import.meta.glob('/src/layouts/**/*.astro', { eager: true })
 const { post } = Astro.props
+// `@astrojs/mdx` applies the `layout` of an `.mdx` file by itself. This page would
+// apply it a second time, and `postHTML()` (lists, RSS) would return a whole page.
+if (post.data.layout && post.filePath.endsWith('.mdx')) {
+  throw new Error(`${post.filePath}: remove 'layout' from this .mdx post (.mdx posts always use BlogPost.astro)`)
+}
 const layoutPath = post.data.layout
   ? path.posix.join('/', path.posix.dirname(post.filePath), post.data.layout)
   : '/src/layouts/BlogPost.astro'
