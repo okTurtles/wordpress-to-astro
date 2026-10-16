@@ -31,17 +31,18 @@ export async function getPosts () {
   return sortedPosts(await getCollection('posts'))
 }
 
-// `.md` entries come with their HTML in `post.rendered`. `.mdx` entries do not:
-// they are components, so they are rendered to a string with Astro's
+// `.md` entries come with their HTML in `post.rendered`, but the local images in
+// it are placeholders that only `render()` replaces. `.mdx` entries have no HTML
+// at all: they are components. Both are rendered to a string with Astro's
 // experimental Container API. Each post is rendered once and cached. The cache
 // checks `post.digest` so that `astro dev` renders an edited post again.
-const mdxHTMLCache = new Map()
+const renderedHTMLCache = new Map()
 export async function postHTML (post) {
-  if (post.rendered) return post.rendered.html
-  let cached = mdxHTMLCache.get(post.id)
+  if (post.rendered && !post.rendered.metadata?.imagePaths?.length) return post.rendered.html
+  let cached = renderedHTMLCache.get(post.id)
   if (cached?.digest !== post.digest) {
     cached = { digest: post.digest, html: renderToHTML(post) }
-    mdxHTMLCache.set(post.id, cached)
+    renderedHTMLCache.set(post.id, cached)
   }
   return cached.html
 }
