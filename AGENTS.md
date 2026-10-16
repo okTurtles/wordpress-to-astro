@@ -81,10 +81,8 @@ The README lists these fields as required: `title`, `date`, `author`, `permalink
 ## Conventions
 
 - **Imports:** Use the `@/` alias (`tsconfig.json` maps `@/*` to `src/*`) in new or WordPress-specific files, for example `import { getPosts } from '@/js/util.js'`. Files from the original template still use relative imports. Both work.
-- **Two code styles exist:**
-  - Files from the original template (`BaseHead`, `Header`, `HeaderLink`, `Footer`, `BlogPost`, `index.astro`, `blog.astro`) use tabs and mostly use semicolons.
-  - WordPress-specific files (`[...wp].astro`, `page/`, `author/`, `category/`, `tag/`, `WPArticleSummary`, `PostFooter`, `Sidebar`, `util.js`, `rss.xml.js`, `content.config.js`) use 2-space indent, single quotes, no semicolons, and a space before function parentheses (`function GET (context)`).
-  - Use the style of the file that you edit.
+- **Code style: use StandardJS style for all new code.** This means 2-space indent, single quotes, no semicolons, and a space before function parentheses (`function GET (context)`). This rule applies to new files and to changes in old files.
+  - Tabs and semicolons are an old style from the original template. Some old template files might still use it. Use the new style for any changes to these files.
 - Shared helpers go in `src/js/util.js` (plain JS, not TS). Get posts with `getPosts()` and post HTML with `postHTML()`. Do not call `getCollection()` in pages. Page-level data comes from `getStaticPaths()` and goes to the page through `props`.
 - Archive pages (`author`, `category`, `tag`) are almost the same. If you change one, you will probably need to change all three. They also import `Debug` from `astro/components` but do not use it.
 - `.npmrc` has `save-exact = true`. Dependencies use exact versions with no `^`. Keep this when you add packages.
