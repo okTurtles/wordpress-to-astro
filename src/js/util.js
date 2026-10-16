@@ -28,7 +28,16 @@ export function sortedPosts (posts) {
 }
 
 export async function getPosts () {
-  return sortedPosts(await getCollection('posts'))
+  const posts = sortedPosts(await getCollection('posts'))
+  // `@astrojs/mdx` applies the `layout` of an `.mdx` file by itself. The post page
+  // would apply it a second time, and `postHTML()` (lists, RSS) would return a
+  // whole page. Every page calls this function, so `astro dev` shows the error on
+  // every page, not only on the post page.
+  const mdxWithLayout = posts.find(p => p.data.layout && p.filePath.endsWith('.mdx'))
+  if (mdxWithLayout) {
+    throw new Error(`${mdxWithLayout.filePath}: remove 'layout' from this .mdx post (.mdx posts always use BlogPost.astro)`)
+  }
+  return posts
 }
 
 // `.md` entries come with their HTML in `post.rendered`, but the local images in
