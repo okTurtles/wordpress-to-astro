@@ -12,7 +12,7 @@ Stack: Astro 7.4.0 (static output, needs Node `>=22.22.0`), `@astrojs/mdx`, `@as
 | --- | --- |
 | `npm ci` / `npm install` | Install dependencies. |
 | `npm run build` | Build the site into `dist/`. **This is the only check in the project.** Use it to verify every change. The README says it finds bugs that `npm run dev` misses. |
-| `npm run dev` (or `npm start`) | Dev server on port **4321**. The README table says 3000, which is out of date. In a non-interactive shell (for example an agent's shell), Astro 7 starts the server in the background and the command exits. Stop it with `npx astro dev stop` (logs: `npx astro dev logs`). |
+| `npm run dev` (or `npm start`) | Dev server on port **4321**. In a non-interactive shell (for example an agent's shell), Astro 7 starts the server in the background and the command exits. Stop it with `npx astro dev stop` (logs: `npx astro dev logs`). |
 | `npm run preview` | Serve the built `dist/` folder. |
 | `./node_modules/.bin/astro telemetry disable` | Run once to turn off Astro telemetry. You can also set `ASTRO_TELEMETRY_DISABLED=1` for one run. |
 
@@ -54,7 +54,7 @@ route = data.permalink         paginate(posts, PAGE_SIZE)     one page per urlif
 
 ## Post frontmatter rules
 
-The README says these fields are required: `title`, `date`, `author`, `layout`, `permalink`, `categories`, `tags`. These fields are optional: `draft`, `id`. The code does not need `layout` (see below). Things the code expects that are not easy to see:
+The README lists these fields as required: `title`, `date`, `author`, `permalink`, `categories`, `tags`. It lists these fields as optional: `layout`, `draft`, `id`. Things the code expects that are not easy to see:
 
 - `permalink` **must start and end with `/`**. `[...wp].astro` removes one character from each end with `.slice(1).slice(0, -1)`. It does not check the value.
 - `author` is strictly required. If one post has no `author`, the whole build stops with `Cannot read properties of undefined (reading 'toLowerCase')` from `urlifyToken` in `author/[slug].astro` (verified on Astro 7).
@@ -87,6 +87,7 @@ The README says these fields are required: `title`, `date`, `author`, `layout`, 
 - Shared helpers go in `src/js/util.js` (plain JS, not TS). Get posts with `getPosts()` and post HTML with `postHTML()`. Do not call `getCollection()` in pages. Page-level data comes from `getStaticPaths()` and goes to the page through `props`.
 - Archive pages (`author`, `category`, `tag`) are almost the same. If you change one, you will probably need to change all three. They also import `Debug` from `astro/components` but do not use it.
 - `.npmrc` has `save-exact = true`. Dependencies use exact versions with no `^`. Keep this when you add packages.
+- `README.md` is the documentation for users. Its "things to keep in mind" list explains the post rules (frontmatter, `layout`, `.mdx`, embeds), and its "How this project differs" list describes the WordPress-specific files and settings. If you change one of these, update the README too.
 - This project is a template that users copy. Text such as "CHANGE THIS", "YOUR NAME HERE", and `your-social-link` is a placeholder on purpose. Do not fill it in unless the user asks.
 
 ## How to verify a change
