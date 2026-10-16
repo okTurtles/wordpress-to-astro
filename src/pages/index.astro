@@ -3,9 +3,8 @@ import BaseHead from '../components/BaseHead.astro'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
 import { SITE_TITLE, SITE_DESCRIPTION, PAGE_SIZE } from '../config.ts'
-import { sortedPosts } from '@/js/util.js'
-// Use Astro.glob() to fetch all posts, and then sort them by date.
-const posts = sortedPosts(await Astro.glob('../posts/*.{md,mdx}'))
+import { getPosts } from '@/js/util.js'
+const posts = await getPosts()
 const hasMorePosts = posts.length > PAGE_SIZE
 ---
 

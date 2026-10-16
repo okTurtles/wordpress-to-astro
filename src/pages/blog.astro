@@ -3,11 +3,9 @@ import BaseHead from '../components/BaseHead.astro'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
 import { SITE_TITLE, SITE_DESCRIPTION, PAGE_SIZE } from '../config'
+import { getPosts } from '@/js/util.js'
 
-// Use Astro.glob() to fetch all posts, and then sort them by date.
-const posts = (await Astro.glob('../posts/*.{md,mdx}')).sort(
-	(a, b) => new Date(b.frontmatter.date).valueOf() - new Date(a.frontmatter.date).valueOf()
-)
+const posts = await getPosts()
 const hasMorePosts = posts.length > PAGE_SIZE
 ---
 
@@ -40,14 +38,14 @@ const hasMorePosts = posts.length > PAGE_SIZE
 				<ul>
 					{posts.slice(0, PAGE_SIZE).map((post) => (
 						<li>
-							<time datetime={post.frontmatter.date}>
-								{new Date(post.frontmatter.date).toLocaleDateString('en-us', {
+							<time datetime={post.data.date}>
+								{new Date(post.data.date).toLocaleDateString('en-us', {
 									year: 'numeric',
 									month: 'short',
 									day: 'numeric',
 								})}
 							</time>
-							<a href={post.frontmatter.permalink}>{post.frontmatter.title}</a>
+							<a href={post.data.permalink}>{post.data.title}</a>
 						</li>
 					))}
 				</ul>

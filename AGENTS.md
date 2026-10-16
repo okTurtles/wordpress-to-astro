@@ -4,7 +4,7 @@
 
 A starter kit that turns an exported WordPress blog into a static Astro site. It is a fork of the official Astro blog template (`create-astro` 1.1.0) with changes that keep the old WordPress URLs and markup. Users clone it, add their own posts, and change it to fit their site. The companion guide is linked in `README.md`.
 
-Stack: Astro 4.5.12 (static output), `@astrojs/mdx`, `@astrojs/rss`, `@astrojs/sitemap`, and remark plugins. There is no client-side JavaScript framework.
+Stack: Astro 7.4.0 (static output, needs Node `>=22.22.0`), `@astrojs/mdx`, `@astrojs/rss`, `@astrojs/sitemap`, `@astrojs/markdown-remark`, and remark plugins. There is no client-side JavaScript framework.
 
 ## Commands
 
@@ -12,7 +12,7 @@ Stack: Astro 4.5.12 (static output), `@astrojs/mdx`, `@astrojs/rss`, `@astrojs/s
 | --- | --- |
 | `npm ci` / `npm install` | Install dependencies. |
 | `npm run build` | Build the site into `dist/`. **This is the only check in the project.** Use it to verify every change. The README says it finds bugs that `npm run dev` misses. |
-| `npm run dev` (or `npm start`) | Dev server. Astro 4 uses port **4321**. The README table says 3000, which is out of date. |
+| `npm run dev` (or `npm start`) | Dev server on port **4321**. The README table says 3000, which is out of date. In a non-interactive shell (for example an agent's shell), Astro 7 starts the server in the background and the command exits. Stop it with `npx astro dev stop` (logs: `npx astro dev logs`). |
 | `npm run preview` | Serve the built `dist/` folder. |
 | `./node_modules/.bin/astro telemetry disable` | Run once to turn off Astro telemetry. You can also set `ASTRO_TELEMETRY_DISABLED=1` for one run. |
 
@@ -20,26 +20,27 @@ The project has no tests, no linter, no formatter, and no type-check script. `@a
 
 Expected build noise. You can ignore these:
 - `npm warn Unknown project config "shamefully-hoist"`. This comes from `.npmrc`, which is there for pnpm users.
-- A Vite warning: "... is dynamically imported by ... but also statically imported by src/pages/rss.xml.js". It appears once for each post. It occurs because the RSS file uses `import.meta.glob` with `eager: true`, and the other pages use `Astro.glob`.
 
 ## Layout and data flow
 
-There is no content collection and no data layer. Each page gets posts from the folder directly:
+All posts come from one content collection. Pages never read `src/posts/` directly:
 
 ```
-src/posts/*.md|mdx  ──Astro.glob──▶ sortedPosts() (src/js/util.js: removes drafts, sorts newest first)
+src/posts/**/*.md|mdx ──glob loader (src/content.config.js)──▶ collection `posts`
                                      │
-   ┌─────────────────────────────────┼──────────────────────────────────────────┐
-   ▼                                 ▼                                          ▼
-[...wp].astro                 page/[page].astro                 author|category|tag/[slug].astro
-route = frontmatter.permalink  paginate(posts, PAGE_SIZE)        one page per urlifyToken(value)
-renders only <Content />       → WPArticleSummary                → WPArticleSummary
-(the HTML comes from the post's `layout`)
+                     getPosts() (src/js/util.js: getCollection('posts') → sortedPosts():
+                                     │          removes drafts, sorts newest first)
+   ┌─────────────────────────────────┼──────────────────────────────────┬────────────────────────┐
+   ▼                                 ▼                                  ▼                        ▼
+[...wp].astro                 page/[page].astro              author|category|tag/[slug]   rss.xml.js
+route = data.permalink         paginate(posts, PAGE_SIZE)     one page per urlifyToken()   summary of
+<Layout><Content /></Layout>   → WPArticleSummary             → WPArticleSummary           postHTML(post)
 ```
 
-- `src/pages/[...wp].astro` creates one page per post at its `permalink`. It renders only `<Content />`. The full HTML page (`<head>`, header, footer, `PostFooter`) comes from the **`layout` frontmatter of the post** (`'../layouts/BlogPost.astro'`). If a post has no `layout`, the page has no `<head>` and no styles.
-- `src/pages/rss.xml.js` uses `import.meta.glob('../posts/**/*.{md,mdx}')`. This pattern is **recursive**. All other pages use the non-recursive `'../posts/*.{md,mdx}'`. A post in a subfolder will appear in the RSS feed, but it will have no page.
-- The `Astro.glob` path is relative to the file that calls it. Files in `src/pages/` and `src/components/` use `'../posts/...'`. Files in `src/pages/<sub>/` use `'../../posts/...'`.
+- `src/content.config.js` defines the `posts` collection with the `glob` loader (`**/*.{md,mdx}` in `./src/posts`). The pattern is recursive, so posts in subfolders get a page too. There is no schema, so `post.data` is the raw frontmatter (`date` stays a string).
+- Every page, component, and the RSS feed gets posts from `getPosts()` and reads frontmatter from `post.data`. `postHTML(post)` (async) returns the post's HTML as a string. For `.md` posts it is `post.rendered.html`. `WPArticleSummary.astro` and `rss.xml.js` use it.
+- `src/pages/[...wp].astro` creates one page per post at its `permalink`. Content collections ignore the `layout` frontmatter of `.md` posts, so this page applies the layout itself. It resolves `post.data.layout` relative to `post.filePath` (for example `src/posts/sub/x.md` + `'../../layouts/BlogPost.astro'`) and looks it up in `import.meta.glob('/src/layouts/**/*.astro')`. No `layout` gives `BlogPost.astro`. A `layout` that is not found stops the build with an error that names the post and the layout (verified). The layout gets `frontmatter={post.data}`, which `BlogPost.astro` reads.
+- Generated files: `.astro/` (types, gitignored; `tsconfig.json` includes `.astro/types.d.ts`, and there is no `src/env.d.ts`) and `node_modules/.astro/data-store.json` (the content store, see "Embeds" below).
 - `src/config.ts` contains `SITE_TITLE`, `SITE_DESCRIPTION`, and `PAGE_SIZE`. The `site` value in `astro.config.mjs` (now `https://example.com`) sets the absolute URLs for RSS, the sitemap, and `og:url`.
 - `src/components/WPArticleSummary.astro` shows a post in a list in one of two ways. If `articlePreview` is set and the HTML contains `<!--more-->`, it shows the HTML before that marker and a "Continue reading" link. If not, it removes the HTML tags and shows the first `maxWords` words (46 by default).
 - The markup uses WordPress theme class names (`entry-*`, `nav-below`, `widget`, `clear-fix`, `alignleft`, and others). `src/styles/global.css` (from Bear Blog) has **no** rules for these classes. They are there so users can add CSS from their WordPress theme.
@@ -47,39 +48,40 @@ renders only <Content />       → WPArticleSummary                → WPArticle
 ### Which pages are template leftovers
 
 - `src/pages/index.astro` (`/`) is still the welcome text from the template. It does not list posts. The list of posts with pages is at `/page/1/`, `/page/2/`, and so on.
-- `src/pages/blog.astro` (`/blog`) shows the newest `PAGE_SIZE` posts. It links to `/page/2/` with a fixed URL. It sorts the posts itself and does **not** use `sortedPosts`, so **draft posts appear in this list** (verified). A user might expect drafts to be hidden.
+- `src/pages/blog.astro` (`/blog`) shows the newest `PAGE_SIZE` posts from `getPosts()` (drafts hidden). It links to `/page/2/` with a fixed URL.
 - `src/components/Sidebar.astro` is not used. It is commented out in `page/[page].astro`. `Search.astro` does not work. It is only a placeholder form. The commented-out import in Sidebar uses `@components/...`, but that alias does not exist. Only `@/` exists.
 - `src/pages/about.md` uses `BlogPost.astro` but has no `author` or `permalink`. Because of this, its `PostFooter` shows "View all posts by undefined" and a link with no `href`.
 
 ## Post frontmatter rules
 
-The README says these fields are required: `title`, `date`, `author`, `layout`, `permalink`, `categories`, `tags`. These fields are optional: `draft`, `id`. Things the code expects that are not easy to see:
+The README says these fields are required: `title`, `date`, `author`, `layout`, `permalink`, `categories`, `tags`. These fields are optional: `draft`, `id`. The code does not need `layout` (see below). Things the code expects that are not easy to see:
 
 - `permalink` **must start and end with `/`**. `[...wp].astro` removes one character from each end with `.slice(1).slice(0, -1)`. It does not check the value.
-- `author` is strictly required. If one post has no `author`, the whole build stops with `Cannot read properties of undefined (reading 'toLowerCase')` from `urlifyToken` in `author/[slug].astro` (verified).
+- `author` is strictly required. If one post has no `author`, the whole build stops with `Cannot read properties of undefined (reading 'toLowerCase')` from `urlifyToken` in `author/[slug].astro` (verified on Astro 7).
 - `date` is an ISO string. The README suggests `node -e "console.log(new Date().toISOString())"` to make one.
-- `layout` is a path relative to the post file. For posts in `src/posts/`, it is `'../layouts/BlogPost.astro'`.
-- `draft: true` removes the post from all pages that use `sortedPosts`. That is all pages except `/blog` (see above).
+- `layout` is optional. If it is set, it is a path relative to the post file and must point to a file in `src/layouts/`. For posts in `src/posts/`, it is `'../layouts/BlogPost.astro'`.
+- `draft: true` removes the post from all pages and from the RSS feed (all of them use `getPosts()`).
 
 ## Gotchas
 
-- **`.mdx` posts break the build.** The glob patterns accept `.mdx`, but `WPArticleSummary.astro` and `rss.xml.js` call `post.compiledContent()`. MDX modules do not have this function. The build stops with `page.compiledContent is not a function` (verified). Use `.md` for posts, or change those two files first.
+- **`.mdx` posts break the build.** The collection accepts `.mdx`, but MDX entries have no `rendered` field, so `postHTML()` stops the build with `Cannot read properties of undefined (reading 'html')` (verified). Use `.md` for posts.
 - **Slugs are simple.** `urlifyToken` only makes the text lowercase and changes spaces to `-`. For example, "News & Events" becomes `/category/news-&-events/`. This might not match the WordPress slug. Two names that differ only in letter case become the same page. The archive page title uses the original text from the first matching post.
 - **The output depends on the build machine.** Dates and times use `toLocaleDateString(undefined, ...)` and `toLocaleTimeString(undefined, ...)`. Thus the build machine's locale and time zone control the text that is shown. (The `blog.astro` list is different. It uses `'en-us'`.)
-- **Embeds need network access at build time.** The `@remark-embedder` plugin in `astro.config.mjs` looks at each paragraph that contains only a URL. When it finds one, it downloads `https://oembed.com/providers.json` and the oEmbed data. The cache is in `node_modules/.cache/@remark-embedder/transformer-oembed/fetch`. The custom `handleError` handles only Twitter URLs. For those, it shows a red error paragraph. Embed errors for any other URL stop the build.
-- Remark plugin order is `[remarkEmbedPlugin, remarkGfm, remarkBreaks]`. `remark-breaks` changes each single newline into `<br>`. This is intentional, because WordPress exports use this format.
+- **Embeds need network access when a post is rendered.** The `@remark-embedder` plugin in `astro.config.mjs` looks at each paragraph that contains only a URL. When it finds one, it downloads `https://oembed.com/providers.json` and the oEmbed data. The plugin has no cache of its own (`@remark-embedder/transformer-oembed` 3.0.0 creates its fetch cache but does not use it). Astro caches the rendered Markdown in its content store (`node_modules/.astro/data-store.json`), so a build fetches embeds only for new or changed posts. A change to `astro.config.mjs` clears the store ("Clearing content store" in the log), and the next build renders every post again. The custom `handleError` handles only Twitter URLs. For those, it shows a red error paragraph. Embed errors for any other URL stop the build.
+- **Remark plugins need the `unified()` processor.** `astro.config.mjs` sets `markdown.processor: unified({ remarkPlugins: [remarkEmbedPlugin, remarkGfm, remarkBreaks] })` (`unified` from `@astrojs/markdown-remark`). Astro 7's default Markdown processor ignores remark plugins **without an error**, so tables, line breaks, and embeds would silently stop working. Keep the plugin order. `remark-breaks` changes each single newline into `<br>`. This is intentional, because WordPress exports use this format.
+- **`compressHTML: true` is intentional.** Astro 7's default (`'jsx'`) removes the whitespace between elements. Without this setting, the date, category, tag, and author links in `PostFooter` run together.
 - `/page/1/` is built in addition to `/`. Both exist.
-- Do not upgrade Astro without care. The code uses `Astro.glob`, the markdown `layout` frontmatter on imported posts, and `compiledContent()`. These all work in Astro 4, but later major versions removed or changed them.
+- Upgrade Astro with care. The code needs Astro 7 APIs: the content layer `glob` loader, `post.rendered.html`, and `markdown.processor`. `Astro.glob()` and `compiledContent()` no longer exist; do not use them. After an upgrade, check the `unified()` and `compressHTML` notes above against the new defaults.
 - `public/wp-content/` is where users copy their mirrored WordPress uploads. The folder is not in the repository. Post HTML links to `/wp-content/uploads/...`.
 
 ## Conventions
 
-- **Imports:** Use the `@/` alias (`tsconfig.json` maps `@/*` to `src/*`) in new or WordPress-specific files, for example `import { sortedPosts } from '@/js/util.js'`. Files from the original template still use relative imports. Both work.
+- **Imports:** Use the `@/` alias (`tsconfig.json` maps `@/*` to `src/*`) in new or WordPress-specific files, for example `import { getPosts } from '@/js/util.js'`. Files from the original template still use relative imports. Both work.
 - **Two code styles exist:**
   - Files from the original template (`BaseHead`, `Header`, `HeaderLink`, `Footer`, `BlogPost`, `index.astro`, `blog.astro`) use tabs and mostly use semicolons.
-  - WordPress-specific files (`[...wp].astro`, `page/`, `author/`, `category/`, `tag/`, `WPArticleSummary`, `PostFooter`, `Sidebar`, `util.js`, `rss.xml.js`) use 2-space indent, single quotes, no semicolons, and a space before function parentheses (`function GET (context)`).
+  - WordPress-specific files (`[...wp].astro`, `page/`, `author/`, `category/`, `tag/`, `WPArticleSummary`, `PostFooter`, `Sidebar`, `util.js`, `rss.xml.js`, `content.config.js`) use 2-space indent, single quotes, no semicolons, and a space before function parentheses (`function GET (context)`).
   - Use the style of the file that you edit.
-- Shared helpers go in `src/js/util.js` (plain JS, not TS). Page-level data comes from `getStaticPaths()` and goes to the page through `props`.
+- Shared helpers go in `src/js/util.js` (plain JS, not TS). Get posts with `getPosts()` and post HTML with `postHTML()`. Do not call `getCollection()` in pages. Page-level data comes from `getStaticPaths()` and goes to the page through `props`.
 - Archive pages (`author`, `category`, `tag`) are almost the same. If you change one, you will probably need to change all three. They also import `Debug` from `astro/components` but do not use it.
 - `.npmrc` has `save-exact = true`. Dependencies use exact versions with no `^`. Keep this when you add packages.
 - This project is a template that users copy. Text such as "CHANGE THIS", "YOUR NAME HERE", and `your-social-link` is a placeholder on purpose. Do not fill it in unless the user asks.

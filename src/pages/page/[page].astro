@@ -5,10 +5,10 @@ import Footer from '@/components/Footer.astro'
 // import Sidebar from '@/components/Sidebar.astro'
 import WPArticleSummary from '@/components/WPArticleSummary.astro'
 import { SITE_TITLE, SITE_DESCRIPTION, PAGE_SIZE } from '@/config.ts'
-import { sortedPosts } from '@/js/util.js'
+import { getPosts } from '@/js/util.js'
 
 export async function getStaticPaths({ paginate }) {
-  const posts = sortedPosts(await Astro.glob('../../posts/*.{md,mdx}'))
+  const posts = await getPosts()
   return paginate(posts, { pageSize: PAGE_SIZE })
 }
 ---

@@ -2,6 +2,7 @@
 
 // alternative: https://github.com/mdevils/html-entities
 import { decodeHTML } from 'entities'
+import { getCollection } from 'astro:content'
 
 // if you need a fancier one, you could use https://github.com/sindresorhus/slugify
 export function urlifyToken (s) {
@@ -15,10 +16,18 @@ export function stripHTML (html = '') {
   return decodeHTML(html.replace(htmlReg, '').replace(commentReg, '')).trim()
 }
 
-export function sortedPosts (paths) {
-  return paths
-    .filter(p => !p.frontmatter.draft)
+export function sortedPosts (posts) {
+  return posts
+    .filter(p => !p.data.draft)
     .sort(
-    (a, b) => new Date(b.frontmatter.date).valueOf() - new Date(a.frontmatter.date).valueOf()
+    (a, b) => new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf()
   )
+}
+
+export async function getPosts () {
+  return sortedPosts(await getCollection('posts'))
+}
+
+export async function postHTML (post) {
+  return post.rendered.html
 }
