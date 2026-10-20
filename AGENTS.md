@@ -4,7 +4,7 @@
 
 A starter kit that turns an exported WordPress blog into a static Astro site. It is a fork of the official Astro blog template (`create-astro` 1.1.0) with changes that keep the old WordPress URLs and markup. Users clone it, add their own posts, and change it to fit their site. The companion guide is linked in `README.md`.
 
-Stack: Astro 7.4.0 (static output, needs Node `>=22.22.0`), `@astrojs/mdx`, `@astrojs/rss`, `@astrojs/sitemap`, `@astrojs/markdown-remark`, and remark plugins. There is no client-side JavaScript framework.
+Stack: Astro 7.3.5 (static output, needs Node `>=22.19.0`: Astro itself needs `>=22.12.0`, and its dependency `undici` 8 needs `>=22.19.0`), `@astrojs/mdx`, `@astrojs/rss`, `@astrojs/sitemap`, `@astrojs/markdown-remark`, and remark plugins. There is no client-side JavaScript framework.
 
 ## Commands
 
@@ -18,8 +18,8 @@ Stack: Astro 7.4.0 (static output, needs Node `>=22.22.0`), `@astrojs/mdx`, `@as
 
 The project has no tests, no linter, no formatter, and no type-check script. `@astrojs/check` is not installed, so `astro check` will not work unless you add it.
 
-Expected build noise. You can ignore these:
-- `npm warn Unknown project config "shamefully-hoist"`. This comes from `.npmrc`, which is there for pnpm users.
+Expected noise. You can ignore these:
+- `npm install` prints `npm warn install-scripts ... esbuild@... (postinstall: node install.js)` and some `deprecated` warnings. The build works without the esbuild install script (verified).
 
 ## Layout and data flow
 
@@ -86,6 +86,7 @@ The README lists these fields as required: `title`, `date`, `author`, `permalink
 - Shared helpers go in `src/js/util.js` (plain JS, not TS). Get posts with `getPosts()` and post HTML with `postHTML()`. Do not call `getCollection()` in pages. Page-level data comes from `getStaticPaths()` and goes to the page through `props`.
 - Archive pages (`author`, `category`, `tag`) are almost the same. If you change one, you will probably need to change all three. They also import `Debug` from `astro/components` but do not use it.
 - `.npmrc` has `save-exact = true`. Dependencies use exact versions with no `^`. Keep this when you add packages.
+- `.npmrc` has `min-release-age=14`. npm refuses any version (direct or transitive) published less than 14 days ago, and `npm install` fails with `ETARGET ... with a date before ...`. When you add or upgrade a package, pick the newest version that is at least 14 days old (`npm view <pkg> time --json`). Do not change `.npmrc` to get around it.
 - `README.md` is the documentation for users. Its "things to keep in mind" list explains the post rules (frontmatter, `layout`, `.mdx`, relative images, embeds), and its "How this project differs" list describes the WordPress-specific files and settings. If you change one of these, update the README too.
 - This project is a template that users copy. Text such as "CHANGE THIS", "YOUR NAME HERE", and `your-social-link` is a placeholder on purpose. Do not fill it in unless the user asks.
 

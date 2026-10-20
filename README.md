@@ -14,7 +14,7 @@ Please see this blog for details:
 2. Clone or copy this project.
 3. Place your markdown-ified Wordpress posts in `src/posts` (subfolders work too).
 4. Place your mirrored `wp-content` folder in `public/`. The most important subfolder of this is `wp-content/uploads`, which contains your pictures. You might or might not need the rest.
-5. Install project dependencies by running `npm install`. You need Node.js `22.22.0` or newer (Astro 7 requires it).
+5. Install project dependencies by running `npm install`. You need Node.js `22.19.0` or newer (Astro 7 and its dependencies require it).
 6. Disable Astro telemetry: `./node_modules/.bin/astro telemetry disable` (this only needs to be done once)
 7. Run `npm run build` to generate site in `dist/` and check for errors
 8. Run `npm run dev` to serve the site locally and monitor files for changes. You can make any modifications as needed to the files under `src/` so that your blog looks and behaves the way you'd like it
@@ -71,7 +71,7 @@ The following differences exist:
 - `astro.config.mjs` sets `compressHTML: true`. It keeps the whitespace between HTML elements. Astro 7's default removes it, and then for example the links in the post footer run together.
 - Added support for `@` in imports to make it easy to import files without using `../../../` etc.
 - Added `PAGE_SIZE` config variable to `src/config.ts`
-- `.npmrc` now uses `save-exact = true`
+- `.npmrc` now uses `save-exact = true` and `min-release-age=14`, so npm only installs package versions that are at least 14 days old
 
 # Astro Starter Kit: Blog
 
